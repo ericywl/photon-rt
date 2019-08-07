@@ -1,8 +1,4 @@
-# Graphics Assignment 5
-
-Yap Wei Lok 1002394
-
-Note: The program is compiled using `cmake` with `CMakeLists.txt`.
+# Ray Tracer
 
 ### What kind of arguments (if any) that you program needs?
 
@@ -25,11 +21,9 @@ TODO: Add more arguments for ray tracer
 
 ### What components of extra project that's been done?
 
-TODO: Work this out
-
-### Were there any references that you found particularly helpful in completing the assignment?
-
-- Both ours and 6.837's lecture notes
+TODO: 
+- Photon mapping with kd-tree acceleration to render caustics
+- Irridance caching
 
 ### Are there any known bugs for your code?
 
