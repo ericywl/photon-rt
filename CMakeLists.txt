@@ -11,6 +11,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include/tracer
     ${PROJECT_SOURCE_DIR}/include/utils
     ${PROJECT_SOURCE_DIR}/vecmath/include
+    ${PROJECT_SOURCE_DIR}/kdtree
 )
 
 file(GLOB_RECURSE ALL_SRCS
@@ -19,4 +20,3 @@ file(GLOB_RECURSE ALL_SRCS
 )
 
 add_executable(${PROJECT_NAME} ${ALL_SRCS} ${SOURCE})
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${FLTK_LIBRARIES})

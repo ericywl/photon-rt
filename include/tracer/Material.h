@@ -94,6 +94,29 @@ public:
         nm.load(filename);
     }
 
+    Vector3f getTexel(Vector2f texCoord)
+    {
+        if (!t.valid())
+        {
+            return diffuseColor;
+        }
+        
+        // Use textures if there is a valid one
+        Vector3f texel = t(texCoord[0], texCoord[1]);
+
+        if (c.valid())
+        {
+            texel = texel + c(texCoord[0], texCoord[1]);
+            // Clamp diffuse color to range [0, 1]
+            for (unsigned int i = 0; i < 3; i++)
+            {
+                texel[i] = (texel[i] > 1.0f) ? 1.0f : texel[i];
+            }
+        }
+        
+        return texel;
+    }
+
 protected:
     Vector3f diffuseColor;
     Vector3f specularColor;

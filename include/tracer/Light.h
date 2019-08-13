@@ -17,6 +17,8 @@ public:
     }
 
     virtual void getIllumination(const Vector3f &p, Vector3f &dir, Vector3f &col, float &distanceToLight) const = 0;
+    
+    virtual Vector3f getPosition() const = 0;
 };
 
 class DirectionalLight : public Light
@@ -40,6 +42,12 @@ public:
         dir = -direction;
         col = color;
         distanceToLight = FLT_MAX;
+    }
+    
+    virtual Vector3f getPosition() const
+    {
+        // Position is not defined
+        assert(false);
     }
 
 private:
@@ -71,6 +79,11 @@ public:
         distanceToLight = dir.abs();
         dir = dir / dir.abs();
         col = color / (1 + falloff * distanceToLight * distanceToLight);
+    }
+    
+    virtual Vector3f getPosition() const
+    {
+        return position;
     }
 
 private:

@@ -13,52 +13,6 @@ bool checkInShadow(Group *g, Vector3f &point, Vector3f &dirToLight, float distTo
     return shadowHit.getT() != distToLight;
 }
 
-Vector3f mirrorDirection(const Vector3f &normal, const Vector3f &incoming)
-{
-    // Compute reflected ray direction
-    float NV = Vector3f::dot(normal, incoming);
-    return (incoming - 2 * NV * normal).normalized();
-}
-
-bool transmittedDirection(const Vector3f &normal, const Vector3f &incoming,
-                          float rIndex1, float rIndex2,
-                          Vector3f &transmitted)
-{
-    // Compute refracted ray direction
-    // Avoid division-by-zero error
-    if (rIndex2 == 0)
-        return false;
-
-    float rIndexRel = rIndex1 / rIndex2;
-    Vector3f incomingN = incoming.normalized();
-
-    float NV = Vector3f::dot(normal, incomingN);
-    float root = 1 - rIndexRel * rIndexRel * (1 - NV * NV);
-    // Imaginary root aka. total internal reflection
-    if (root < 0)
-        return false;
-
-    float temp = rIndexRel * Vector3f::dot(normal, -incomingN);
-    temp -= sqrt(root);
-    transmitted = (temp * normal + rIndexRel * incoming).normalized();
-    return true;
-}
-
-float computeReflectionWeight(const Vector3f &normal, const Vector3f &incoming,
-                              float refrIndex, float nextRefrIndex,
-                              Vector3f &transmitted)
-{
-    // Compute reflectance using Schlick's approximation of Fresnel's equation
-    float r0 = pow((nextRefrIndex - refrIndex) / (nextRefrIndex + refrIndex), 2);
-    float c;
-    if (refrIndex > nextRefrIndex)
-        c = fabs(Vector3f::dot(transmitted, normal));
-    else
-        c = fabs(Vector3f::dot(incoming, normal));
-
-    return r0 + pow(1 - c, 5) * (1 - r0);
-}
-
 RayTracer::RayTracer(SceneParser *scene, Arguments *args)
 {
     this->scene = scene;
@@ -197,9 +151,9 @@ Vector3f RayTracer::traceRay(Ray &ray, Hit &hit, float tMin,
             return color + reflColor;
 
         // Compute Schlick's approximation reflectance
-        float reflectance = computeReflectionWeight(normal, ray.getDirection(),
-                                                    refrIndex, nextRefrIndex,
-                                                    transmittedDir);
+        float reflectance = computeReflectance(normal, ray.getDirection(),
+                                               refrIndex, nextRefrIndex,
+                                               transmittedDir);
         return color + reflectance * reflColor + (1 - reflectance) * refrColor;
     }
 

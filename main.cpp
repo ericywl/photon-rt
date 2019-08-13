@@ -1,21 +1,12 @@
-#include <chrono>
-#include <random>
-
 #include "BitmapImage.hpp"
 #include "SceneParser.h"
 #include "RayTracer.h"
 #include "Image.h"
 #include "ArgParser.h"
 #include "AntiAlias.h"
+#include "Helper.h"
 
 using namespace std;
-
-default_random_engine dre(chrono::steady_clock::now().time_since_epoch().count());
-float randomFloat(float min, float max)
-{
-    uniform_real_distribution<float> res{min, max};
-    return res(dre);
-}
 
 void renderAA(Arguments *args)
 {
