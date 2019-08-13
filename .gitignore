@@ -1,5 +1,14 @@
+.DS_Store
 build/
 out/
-
 .vscode/
+*.bmp
 
+# project specific
+asg5
+
+# build
+Makefile
+CMakeFiles
+CMakeCache.txt
+*.cmake
