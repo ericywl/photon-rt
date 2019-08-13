@@ -3,12 +3,11 @@
 Vector3f Material::diffuseShade(const Ray &ray,
                                 const Hit &hit,
                                 const Vector3f &normal,
-                                const ShadeArgs &sArgs)
+                                const ShadeArgs &sArgs,
+                                const bool disregardL)
 {
     // Diffuse shading
     // Thanks to http://www.opengl-tutorial.org/beginners-tutorials/tutorial-8-basic-shading/
-    float LN = max(Vector3f::dot(sArgs.dirToLight, normal), 0.0f);
-
     Vector3f difCol = diffuseColor;
     if (noise.valid())
     {
@@ -31,19 +30,21 @@ Vector3f Material::diffuseShade(const Ray &ray,
         }
     }
 
-    if (disregardLighting)
+    if (disregardL)
         return difCol;
 
+    float LN = max(Vector3f::dot(sArgs.dirToLight, normal), 0.0f);
     return LN * difCol * sArgs.lightCol;
 }
 
 Vector3f Material::specularShade(const Ray &ray,
                                  const Vector3f &normal,
-                                 const ShadeArgs &sArgs)
+                                 const ShadeArgs &sArgs,
+                                 const bool disregardL)
 {
     // Specular shading
     // Thanks to http://learnwebgl.brown37.net/09_lights/lights_specular.html
-    if (disregardLighting)
+    if (disregardL)
     {
         return specularColor;
     }
@@ -74,7 +75,7 @@ Vector3f Material::shade(const Ray &ray,
                          const Hit &hit,
                          const ShadeArgs &sArgs,
                          Vector3f &normalViz,
-                         bool noSpecShade)
+                         const bool noSpecShade)
 {
     Vector3f normal;
     if (nm.valid() && hit.hasTex)
@@ -95,13 +96,13 @@ Vector3f Material::shade(const Ray &ray,
 
     normalViz = normal;
 
-    Vector3f retCol = diffuseShade(ray, hit, normal, sArgs);
+    Vector3f retCol = diffuseShade(ray, hit, normal, sArgs, disregardLighting);
     if (!noSpecShade)
     {
         // For backward compatibility with ray casting assignment,
         // include specular shading only if specified because we
         // will be using ray tracing for the specular component
-        retCol += specularShade(ray, normal, sArgs);
+        retCol += specularShade(ray, normal, sArgs, disregardLighting);
     }
 
     // Gamma correction
@@ -116,7 +117,7 @@ Vector3f Material::shade(const Ray &ray,
 Vector3f Material::shade(const Ray &ray,
                          const Hit &hit,
                          const ShadeArgs &sArgs,
-                         bool noSpecShade)
+                         const bool noSpecShade)
 {
     Vector3f temp;
     return shade(ray, hit, sArgs, temp, noSpecShade);

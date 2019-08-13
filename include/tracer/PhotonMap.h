@@ -60,14 +60,15 @@ private:
 class PhotonTracer
 {
 public:
-    PhotonTracer(SceneParser *scene, int maxPhotons);
+    PhotonTracer(SceneParser *scene, int maxPhotons, int maxBounces);
 
-    void buildPhotonMap();
+    void buildPhotonMap(unsigned int numPhotons);
 
     void tracePhoton(Ray &photonRay, Vector3f color,
                      unsigned int bounces, float refrIndex);
 
 private:
+    int maxBounces;
     SceneParser *scene;
     PhotonMap *photonMap;
 };

@@ -27,19 +27,24 @@ void PhotonMap::balance()
 }
 
 /* PHOTON TRACER */
-PhotonTracer::PhotonTracer(SceneParser *scene, int maxPhotons)
+PhotonTracer::PhotonTracer(SceneParser *scene, int maxPhotons, int maxBounces)
 {
+    this->maxBounces = maxBounces;
     this->scene = scene;
     this->photonMap = new PhotonMap(maxPhotons);
 }
 
-void PhotonTracer::buildPhotonMap()
+void PhotonTracer::buildPhotonMap(unsigned int numPhotons)
 {
-    for (int i = 0; i < scene->getNumLights(); i++)
+    for (unsigned int i = 0; i < scene->getNumLights(); i++)
     {
-        Light *light = scene->getLight(i);
-        Vector3f dir = randomUnitVector();
-        Ray photonRay{light->getPosition(), dir};
+        for (unsigned int j = 0; j < numPhotons; j++)
+        {
+            Light *light = scene->getLight(i);
+            Vector3f dir = randomUnitVector();
+            Ray photonRay{light->getPosition(), dir};
+            tracePhoton(photonRay, light->getSourceColor(), maxBounces, 1.0f);
+        }
     }
 }
 
@@ -64,7 +69,6 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
     if (nextRefrIndex > 0)
     {
         // Dielectric material
-
         // If ray is exiting an object, the normal and ray direction will differ
         // by an angle of 0 to 90 degrees ie. cos(theta) > 0
         if (Vector3f::dot(photonRay.getDirection(), normal) > 0)
@@ -109,9 +113,11 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
         return tracePhoton(nextRay, color, bounces - 1, nextRefrIndex);
     }
     
+    // TODO: Should texture be separated with diffuse color?
     Vector3f hitCol = hit.hasTex ? hit.getMaterial()->getTexel(hit.texCoord) : Vector3f{1};
     photonMap->store(point, color * hitCol, photonRay.getDirection());
     
+    // Calculate diffuse and specular reflection coefficients
     float colMax = max(color.x(), color.y(), color.z());
     Vector3f difCol = color * hit.getMaterial()->getDiffuseColor();
     Vector3f specCol = color * hit.getMaterial()->getSpecularColor();
@@ -135,5 +141,8 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
     // Specular reflect
     Vector3f reflectDir = mirrorDirection(normal, photonRay.getDirection());
     Ray reflectRay{point, reflectDir};
+    // TODO: Why multiply by Pd or Ps?
     return tracePhoton(reflectRay, specCol / Ps, bounces - 1, refrIndex);
 }
+
+// TODO: Radiance estimate and monte-carlo

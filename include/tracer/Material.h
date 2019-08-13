@@ -20,6 +20,8 @@ struct ShadeArgs
     bool blinn;
     float gamma;
 
+    ShadeArgs() {}
+
     ShadeArgs(bool b, float g)
     {
         blinn = b;
@@ -62,22 +64,24 @@ public:
     Vector3f diffuseShade(const Ray &ray,
                           const Hit &hit,
                           const Vector3f &norm,
-                          const ShadeArgs &sArgs);
+                          const ShadeArgs &sArgs,
+                          const bool disregardL = false);
 
     Vector3f specularShade(const Ray &ray,
                            const Vector3f &norm,
-                           const ShadeArgs &sArgs);
+                           const ShadeArgs &sArgs,
+                           const bool disregardL = false);
 
     Vector3f shade(const Ray &ray,
                    const Hit &hit,
                    const ShadeArgs &sArgs,
                    Vector3f &normalViz,
-                   bool noSpecShade = false);
+                   const bool noSpecShade = false);
 
     Vector3f shade(const Ray &ray,
                    const Hit &hit,
                    const ShadeArgs &sArgs,
-                   bool noSpecShade = false);
+                   const bool noSpecShade = false);
 
     void loadTexture(const char *filename)
     {
@@ -100,7 +104,7 @@ public:
         {
             return diffuseColor;
         }
-        
+
         // Use textures if there is a valid one
         Vector3f texel = t(texCoord[0], texCoord[1]);
 
@@ -113,7 +117,7 @@ public:
                 texel[i] = (texel[i] > 1.0f) ? 1.0f : texel[i];
             }
         }
-        
+
         return texel;
     }
 
