@@ -66,7 +66,7 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
     float tMin = scene->getCamera()->getTMin();
     if (!scene->getGroup()->intersect(photonRay, hit, tMin))
         return;
-        
+
     if (hit.getMaterial()->getSpecularColor() == Vector3f::ZERO)
         return;
 
@@ -133,7 +133,7 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
     Vector3f specCol = hit.getMaterial()->getSpecularColor();
 
     // Calculate diffuse and specular reflection coefficients
-    Vector3f refCol = difCol + specCol;
+    Vector3f refCol = (difCol + specCol) / 2.0f;
     assert(refCol.sum() != 0.0f);
     float reflectProb = refCol.max();
     float Pd = difCol.sum() / refCol.sum() * reflectProb;
@@ -152,12 +152,17 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
         Ray reflectRay{point, reflectDir};
         return tracePhoton(reflectRay, color * difCol / Pd, bounces - 1, refrIndex);
     }
-
-    // Specular reflect
-    Vector3f reflectDir = mirrorDirection(normal, photonRay.getDirection());
-    Ray reflectRay{point, reflectDir};
-    // TODO: Why multiply by Pd or Ps?
-    return tracePhoton(reflectRay, color * specCol / Ps, bounces - 1, refrIndex);
+    else if (roulette < Pd + Ps)
+    {
+        // Specular reflect
+        Vector3f reflectDir = mirrorDirection(normal, photonRay.getDirection());
+        Ray reflectRay{point, reflectDir};
+        // TODO: Why multiply by Pd or Ps?
+        return tracePhoton(reflectRay, color * specCol / Ps, bounces - 1, refrIndex); /* code */
+    }
+    
+    // Photon got absorbed
+    // Do nothing
 }
 
 Vector3f PhotonMap::radianceEstimate(Ray &ray, Hit &hit, float radius)
@@ -169,10 +174,13 @@ Vector3f PhotonMap::radianceEstimate(Ray &ray, Hit &hit, float radius)
     if (photons.size() == 0)
         return col;
 
+    float radius2 = radius * radius;
     for (KDTreeNode n : photons)
     {
-        col += n.p.color;
+        float contrib = -Vector3f::dot(n.p.inDirection, hit.getNormal());
+        contrib = std::max(contrib, 0.0f);
+        col += n.p.color * contrib;
     }
 
-    return col / photons.size();
+    return col / (M_PI * radius2);
 }

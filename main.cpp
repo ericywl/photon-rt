@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
     // Build photon map
     cout << "Building photon map..." << endl;
-    PhotonMap pMap = PhotonMap(scene, 0, 4);
+    PhotonMap pMap = PhotonMap(scene, 200000, 4);
     pMap.build();
 
     if (args->antiAlias)
