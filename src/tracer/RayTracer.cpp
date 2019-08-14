@@ -20,6 +20,7 @@ RayTracer::RayTracer(SceneParser *scene, Arguments *args)
     castShadows = args->shadows;
     blinn = args->useBlinn;
     gamma = args->gamma;
+    // searchRadius = args->searchRadius;
 }
 
 void RayTracer::setScene(SceneParser *newScene)
@@ -32,18 +33,37 @@ void RayTracer::setBounces(int newBounces)
     this->maxBounces = newBounces;
 }
 
-Vector3f RayTracer::computeColor(Vector2f &pixel, Vector3f &normalViz)
+Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &normalViz)
 {
     Hit hit;
     Ray ray = scene->getCamera()->generateRay(pixel);
     float tMin = scene->getCamera()->getTMin();
-    return traceRay(ray, hit, tMin, maxBounces, 1.0f, normalViz);
+
+    Vector3f direct = traceRay(ray, hit, tMin, maxBounces, 1.0f, normalViz);
+    Vector3f indirect = Vector3f::ZERO;
+    for (unsigned int i = 0; i < 10; i++)
+    {
+        Vector3f dir = randomUnitVector();
+        if (Vector3f::dot(dir, hit.getNormal()) < 0.0f)
+        {
+            dir = -dir;
+        }
+        
+        Hit iHit;
+        Ray iRay{ray.pointAtParameter(hit.getT()), dir};
+        if (scene->getGroup()->intersect(iRay, iHit, tMin))
+        {
+            indirect += pMap.radianceEstimate(ray, hit, 0.1);
+        }
+    }
+    
+    return direct + (indirect / 10);
 }
 
-Vector3f RayTracer::computeColor(Vector2f &pixel)
+Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap)
 {
     Vector3f temp;
-    return computeColor(pixel, temp);
+    return computeColor(pixel, pMap, temp);
 }
 
 Vector3f RayTracer::computeIllumination(Ray &ray, Hit &hit, Vector3f &point,

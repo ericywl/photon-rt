@@ -1,6 +1,7 @@
 #include "BitmapImage.hpp"
 #include "SceneParser.h"
 #include "RayTracer.h"
+#include "PhotonMap.h"
 #include "Image.h"
 #include "ArgParser.h"
 #include "AntiAlias.h"
@@ -12,6 +13,11 @@ void renderAA(Arguments *args)
 {
     SceneParser *scene = new SceneParser(args->inputName);
     RayTracer rtx = RayTracer(scene, args);
+
+    // Build photon map
+    cout << "Building photon map..." << endl;
+    PhotonMap pMap = PhotonMap(scene, 200000, 4);
+    pMap.build();
 
     // Sampling scale
     unsigned int scale = 3;
@@ -26,6 +32,7 @@ void renderAA(Arguments *args)
     float wStepHigh = 1.0f / widthHigh;
     float hStepHigh = 1.0f / heightHigh;
 
+    cout << "Ray tracing..." << endl;
     for (unsigned int w = 0; w < widthHigh; w++)
     {
         for (unsigned int h = 0; h < heightHigh; h++)
@@ -36,7 +43,7 @@ void renderAA(Arguments *args)
             // Calculate screen space coordinates
             Vector2f pixel{2.0f * (float(x) + 0.5f) * wStepHigh - 1, 2.0f * (float(y) + 0.5f) * hStepHigh - 1};
             // Generate ray through pixel and compute resulting color
-            Vector3f color = rtx.computeColor(pixel);
+            Vector3f color = rtx.computeColor(pixel, pMap);
             imgHigh.SetPixel(w, h, color);
         }
     }
@@ -55,6 +62,11 @@ void render(Arguments *args, bool normalsOnly = false)
     SceneParser *scene = new SceneParser(args->inputName);
     RayTracer rtx = RayTracer(scene, args);
 
+    // Build photon map
+    cout << "Building photon map..." << endl;
+    PhotonMap pMap = PhotonMap(scene, 200000, 4);
+    pMap.build();
+
     // Then loop over each pixel in the image, shooting a ray
     // through that pixel and finding its intersection with
     // the scene.  Write the color at the intersection to that
@@ -68,15 +80,17 @@ void render(Arguments *args, bool normalsOnly = false)
     float wStep = 1.0f / args->width;
     float hStep = 1.0f / args->height;
 
+    cout << "Ray tracing..." << endl;
     for (unsigned int w = 0; w < args->width; w++)
     {
+        cout << float(w) / (args->width) << endl;
         for (unsigned int h = 0; h < args->height; h++)
         {
             // Calculate screen space coordinates
             Vector2f pixel{2.0f * (float(w) + 0.5f) * wStep - 1, 2.0f * (float(h) + 0.5f) * hStep - 1};
             // Generate ray through pixel and compute resulting color
             Vector3f normalViz;
-            Vector3f color = rtx.computeColor(pixel, normalViz);
+            Vector3f color = rtx.computeColor(pixel, pMap, normalViz);
             img.SetPixel(w, h, color);
 
             // Set normal visualization pixel color

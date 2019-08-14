@@ -9,6 +9,7 @@
 #include "SceneParser.h"
 #include "ArgParser.h"
 #include "Helper.h"
+#include "PhotonMap.h"
 
 class RayTracer
 {
@@ -19,9 +20,9 @@ public:
 
     void setBounces(int newBounces);
 
-    Vector3f computeColor(Vector2f &pixel);
+    Vector3f computeColor(Vector2f &pixel, PhotonMap &pMap);
 
-    Vector3f computeColor(Vector2f &pixel, Vector3f &normalViz);
+    Vector3f computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &normalViz);
 
 private:
     Vector3f traceRay(Ray &ray, Hit &hit, float tMin,

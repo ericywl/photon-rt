@@ -1,9 +1,10 @@
 #include "PhotonMap.h"
 
-/* PHOTON MAP */
-PhotonMap::PhotonMap(int maxPhotons)
+PhotonMap::PhotonMap(SceneParser *scene, int maxPhotons, int maxBounces)
 {
+    this->scene = scene;
     this->maxPhotons = maxPhotons;
+    this->maxBounces = maxBounces;
 }
 
 void PhotonMap::store(Photon p)
@@ -26,16 +27,21 @@ void PhotonMap::balance()
     pMapTree.optimize();
 }
 
-/* PHOTON TRACER */
-PhotonTracer::PhotonTracer(SceneParser *scene, int maxPhotons, int maxBounces)
+vector<KDTreeNode> PhotonMap::findInRange(const Vector3f &point, const float radius)
 {
-    this->maxBounces = maxBounces;
-    this->scene = scene;
-    this->photonMap = new PhotonMap(maxPhotons);
+    KDTreeNode refNode;
+    refNode.p.position = point;
+
+    vector<KDTreeNode> nearbyPhotons;
+    pMapTree.find_within_range(refNode, radius,
+                               back_insert_iterator<vector<KDTreeNode>>(nearbyPhotons));
+    return nearbyPhotons;
 }
 
-void PhotonTracer::buildPhotonMap(unsigned int numPhotons)
+
+void PhotonMap::build()
 {
+    int numPhotons = maxPhotons / scene->getNumLights();
     for (unsigned int i = 0; i < scene->getNumLights(); i++)
     {
         for (unsigned int j = 0; j < numPhotons; j++)
@@ -46,9 +52,11 @@ void PhotonTracer::buildPhotonMap(unsigned int numPhotons)
             tracePhoton(photonRay, light->getSourceColor(), maxBounces, 1.0f);
         }
     }
+    
+    this->balance();
 }
 
-void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
+void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
                                unsigned int bounces, float refrIndex)
 {
     if (bounces == 0)
@@ -106,24 +114,25 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
             Ray nextRay{point, rayDir};
             return tracePhoton(nextRay, color, bounces - 1, refrIndex);
         }
-    
+
         // Refract
         rayDir = transmittedDir;
         Ray nextRay{point, rayDir};
         return tracePhoton(nextRay, color, bounces - 1, nextRefrIndex);
     }
-    
+
     // TODO: Should texture be separated with diffuse color?
-    Vector3f hitCol = hit.hasTex ? hit.getMaterial()->getTexel(hit.texCoord) : Vector3f{1};
-    photonMap->store(point, color * hitCol, photonRay.getDirection());
-    
+    ShadeArgs empty;
+    // Get possible texture color
+    Vector3f difCol = color * hit.getMaterial()->diffuseShade(photonRay, hit, normal, empty, true);
+    Vector3f specCol = color * hit.getMaterial()->getSpecularColor();
+    store(point, difCol, photonRay.getDirection());
+
     // Calculate diffuse and specular reflection coefficients
     float colMax = color.max();
-    Vector3f difCol = color * hit.getMaterial()->getDiffuseColor();
-    Vector3f specCol = color * hit.getMaterial()->getSpecularColor();
     float Pd = difCol.max() / colMax;
     float Ps = specCol.max() / colMax;
-    
+
     // Russian Roulette
     float roulette = randomFloat(0, 1);
     if (roulette < Pd)
@@ -133,11 +142,11 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
         // Flip direction if not in normal hemisphere
         if (Vector3f::dot(reflectDir, normal) < 0.0f)
             reflectDir = -reflectDir;
-            
+
         Ray reflectRay{point, reflectDir};
-        return tracePhoton(reflectRay, hitCol * difCol / Pd, bounces - 1, refrIndex);
+        return tracePhoton(reflectRay, difCol / Pd, bounces - 1, refrIndex);
     }
-    
+
     // Specular reflect
     Vector3f reflectDir = mirrorDirection(normal, photonRay.getDirection());
     Ray reflectRay{point, reflectDir};
@@ -145,4 +154,16 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
     return tracePhoton(reflectRay, specCol / Ps, bounces - 1, refrIndex);
 }
 
-// TODO: Radiance estimate and monte-carlo
+Vector3f PhotonMap::radianceEstimate(Ray &ray, Hit &hit, float radius)
+{
+    Vector3f point = ray.pointAtParameter(hit.getT());
+    vector<KDTreeNode> photons = findInRange(point, radius);
+    Vector3f col = Vector3f::ZERO;
+    for (KDTreeNode n : photons)
+    {
+        Photon p = n.p;
+        col = col + p.color;
+    }
+    
+    return col / photons.size();
+}

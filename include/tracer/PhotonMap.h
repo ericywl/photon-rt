@@ -23,17 +23,25 @@ struct Photon
 
 struct KDTreeNode
 {
-    typedef double value_type;
+    typedef float value_type;
     Photon p;
     int index;
+
+    KDTreeNode() {}
 
     KDTreeNode(Photon p)
     {
         this->p = p;
     }
 
-    value_type operator[](int n) const
+    Vector3f position() const
     {
+        return p.position;
+    }
+
+    value_type operator[](unsigned int n) const
+    {
+        assert(n < 3);
         return p.position[n];
     }
 
@@ -46,31 +54,29 @@ struct KDTreeNode
 class PhotonMap
 {
 public:
-    PhotonMap(int maxPhotons);
+    int maxPhotons;
+
+    PhotonMap(SceneParser *scene, int maxPhotons, int maxBounces);
+
+    void build();
 
     void store(Photon p);
+
     void store(const Vector3f &pos, const Vector3f &power, const Vector3f &dir);
+
     void balance();
 
-private:
-    int maxPhotons;
-    KDTree::KDTree<3, KDTreeNode> pMapTree;
-};
-
-class PhotonTracer
-{
-public:
-    PhotonTracer(SceneParser *scene, int maxPhotons, int maxBounces);
-
-    void buildPhotonMap(unsigned int numPhotons);
+    vector<KDTreeNode> findInRange(const Vector3f &pos, const float radius);
 
     void tracePhoton(Ray &photonRay, Vector3f color,
                      unsigned int bounces, float refrIndex);
 
+    Vector3f radianceEstimate(Ray &ray, Hit &hit, float radius);
+
 private:
     int maxBounces;
+    KDTree::KDTree<3, KDTreeNode> pMapTree;
     SceneParser *scene;
-    PhotonMap *photonMap;
 };
 
 #endif
