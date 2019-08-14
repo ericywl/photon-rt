@@ -118,11 +118,11 @@ void PhotonTracer::tracePhoton(Ray &photonRay, Vector3f color,
     photonMap->store(point, color * hitCol, photonRay.getDirection());
     
     // Calculate diffuse and specular reflection coefficients
-    float colMax = max(color.x(), color.y(), color.z());
+    float colMax = color.max();
     Vector3f difCol = color * hit.getMaterial()->getDiffuseColor();
     Vector3f specCol = color * hit.getMaterial()->getSpecularColor();
-    float Pd = max(difCol.x(), difCol.y(), difCol.z()) / colMax;
-    float Ps = max(specCol.x(), specCol.y(), specCol.z()) / colMax;
+    float Pd = difCol.max() / colMax;
+    float Ps = specCol.max() / colMax;
     
     // Russian Roulette
     float roulette = randomFloat(0, 1);

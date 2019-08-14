@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <algorithm>
 
 #include "Vector3f.h"
 #include "Vector2f.h"
@@ -185,6 +186,11 @@ void Vector3f::negate()
 	m_elements[0] = -m_elements[0];
 	m_elements[1] = -m_elements[1];
 	m_elements[2] = -m_elements[2];
+}
+
+float Vector3f::max()
+{
+	return std::max(std::max(m_elements[0], m_elements[1]), m_elements[2]);
 }
 
 Vector3f::operator const float* () const

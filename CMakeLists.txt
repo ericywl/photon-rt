@@ -10,13 +10,13 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include/maps
     ${PROJECT_SOURCE_DIR}/include/tracer
     ${PROJECT_SOURCE_DIR}/include/utils
-    ${PROJECT_SOURCE_DIR}/vecmath/include
-    ${PROJECT_SOURCE_DIR}/kdtree
+    ${PROJECT_SOURCE_DIR}/lib/vecmath/include
+    ${PROJECT_SOURCE_DIR}/lib/kdtree
 )
 
 file(GLOB_RECURSE ALL_SRCS
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
-    "${PROJECT_SOURCE_DIR}/vecmath/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/lib/vecmath/src/*.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${ALL_SRCS} ${SOURCE})

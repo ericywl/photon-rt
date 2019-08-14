@@ -19,11 +19,13 @@ int randomInt(int min, int max)
 Vector3f randomUnitVector()
 {
     Vector3f res;
+    float x, y, z;
     do
     {
-        res.x = randomFloat(-1.0f, 1.0f);
-        res.y = randomFloat(-1.0f, 1.0f);
-        res.z = randomFloat(-1.0f, 1.0f);
+        x = randomFloat(-1.0f, 1.0f);
+        y = randomFloat(-1.0f, 1.0f);
+        z = randomFloat(-1.0f, 1.0f);
+        res = Vector3f{x, y, z};
     } while (res.absSquared() > 1.0f);
     
     return res.normalized();
