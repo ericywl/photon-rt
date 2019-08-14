@@ -38,9 +38,9 @@ vector<KDTreeNode> PhotonMap::findInRange(const Vector3f &point, const float rad
     return nearbyPhotons;
 }
 
-
 void PhotonMap::build()
 {
+    assert(scene->getNumLights() != 0);
     int numPhotons = maxPhotons / scene->getNumLights();
     for (unsigned int i = 0; i < scene->getNumLights(); i++)
     {
@@ -52,12 +52,12 @@ void PhotonMap::build()
             tracePhoton(photonRay, light->getSourceColor(), maxBounces, 1.0f);
         }
     }
-    
+
     this->balance();
 }
 
 void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
-                               unsigned int bounces, float refrIndex)
+                            unsigned int bounces, float refrIndex)
 {
     if (bounces == 0)
         return;
@@ -65,6 +65,9 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
     Hit hit;
     float tMin = scene->getCamera()->getTMin();
     if (!scene->getGroup()->intersect(photonRay, hit, tMin))
+        return;
+        
+    if (hit.getMaterial()->getSpecularColor() == Vector3f::ZERO)
         return;
 
     Vector3f point = photonRay.pointAtParameter(hit.getT());
@@ -123,15 +126,18 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
 
     // TODO: Should texture be separated with diffuse color?
     ShadeArgs empty;
-    // Get possible texture color
-    Vector3f difCol = color * hit.getMaterial()->diffuseShade(photonRay, hit, normal, empty, true);
-    Vector3f specCol = color * hit.getMaterial()->getSpecularColor();
-    store(point, difCol, photonRay.getDirection());
+    Vector3f hitCol = color * hit.getMaterial()->diffuseShade(photonRay, hit, normal, empty, true);
+    store(point, hitCol, photonRay.getDirection());
+
+    Vector3f difCol = hit.getMaterial()->getDiffuseColor();
+    Vector3f specCol = hit.getMaterial()->getSpecularColor();
 
     // Calculate diffuse and specular reflection coefficients
-    float colMax = color.max();
-    float Pd = difCol.max() / colMax;
-    float Ps = specCol.max() / colMax;
+    Vector3f refCol = difCol + specCol;
+    assert(refCol.sum() != 0.0f);
+    float reflectProb = refCol.max();
+    float Pd = difCol.sum() / refCol.sum() * reflectProb;
+    float Ps = reflectProb - Pd;
 
     // Russian Roulette
     float roulette = randomFloat(0, 1);
@@ -144,14 +150,14 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
             reflectDir = -reflectDir;
 
         Ray reflectRay{point, reflectDir};
-        return tracePhoton(reflectRay, difCol / Pd, bounces - 1, refrIndex);
+        return tracePhoton(reflectRay, color * difCol / Pd, bounces - 1, refrIndex);
     }
 
     // Specular reflect
     Vector3f reflectDir = mirrorDirection(normal, photonRay.getDirection());
     Ray reflectRay{point, reflectDir};
     // TODO: Why multiply by Pd or Ps?
-    return tracePhoton(reflectRay, specCol / Ps, bounces - 1, refrIndex);
+    return tracePhoton(reflectRay, color * specCol / Ps, bounces - 1, refrIndex);
 }
 
 Vector3f PhotonMap::radianceEstimate(Ray &ray, Hit &hit, float radius)
@@ -159,11 +165,14 @@ Vector3f PhotonMap::radianceEstimate(Ray &ray, Hit &hit, float radius)
     Vector3f point = ray.pointAtParameter(hit.getT());
     vector<KDTreeNode> photons = findInRange(point, radius);
     Vector3f col = Vector3f::ZERO;
+
+    if (photons.size() == 0)
+        return col;
+
     for (KDTreeNode n : photons)
     {
-        Photon p = n.p;
-        col = col + p.color;
+        col += n.p.color;
     }
-    
+
     return col / photons.size();
 }

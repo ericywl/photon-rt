@@ -64,7 +64,7 @@ void render(Arguments *args, bool normalsOnly = false)
 
     // Build photon map
     cout << "Building photon map..." << endl;
-    PhotonMap pMap = PhotonMap(scene, 200000, 4);
+    PhotonMap pMap = PhotonMap(scene, 0, 4);
     pMap.build();
 
     // Then loop over each pixel in the image, shooting a ray

@@ -193,6 +193,11 @@ float Vector3f::max()
 	return std::max(std::max(m_elements[0], m_elements[1]), m_elements[2]);
 }
 
+float Vector3f::sum()
+{
+	return m_elements[0] + m_elements[1] + m_elements[2];
+}
+
 Vector3f::operator const float* () const
 {
     return m_elements;

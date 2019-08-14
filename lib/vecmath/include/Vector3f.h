@@ -57,6 +57,7 @@ public:
 	void negate();
 	
 	float max();
+	float sum();
 
 	// ---- Utility ----
     operator const float* () const; // automatic type conversion for OpenGL
