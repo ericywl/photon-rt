@@ -16,9 +16,12 @@ struct Photon
 
     Photon(){};
 
-    Photon(Vector3f pos, Vector3f col, Vector3f dir) : position(pos),
-                                                       color(col),
-                                                       inDirection(dir) {}
+    Photon(Vector3f pos, Vector3f col, Vector3f dir)
+    {
+        position = pos;
+        color = col;
+        inDirection = dir.normalized();
+    }
 };
 
 struct KDTreeNode
@@ -54,8 +57,6 @@ struct KDTreeNode
 class PhotonMap
 {
 public:
-    int maxPhotons;
-
     PhotonMap(SceneParser *scene, int maxPhotons, int maxBounces);
 
     void build();
@@ -74,7 +75,10 @@ public:
     Vector3f radianceEstimate(Ray &ray, Hit &hit, float radius);
 
 private:
+    int maxPhotons;
     int maxBounces;
+    int numStoredPhotons;
+    int numPhotonsPerLight;
     KDTree::KDTree<3, KDTreeNode> pMapTree;
     SceneParser *scene;
 };

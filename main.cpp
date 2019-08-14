@@ -27,6 +27,7 @@ void renderAA(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *ar
     cout << "Ray tracing..." << endl;
     for (unsigned int w = 0; w < widthHigh; w++)
     {
+        cout << float(w) / widthHigh << endl;
         for (unsigned int h = 0; h < heightHigh; h++)
         {
             // Jittered sampling
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 
     // Build photon map
     cout << "Building photon map..." << endl;
-    PhotonMap pMap = PhotonMap(scene, 200000, 4);
+    PhotonMap pMap = PhotonMap(scene, 200000, 8);
     pMap.build();
 
     if (args->antiAlias)

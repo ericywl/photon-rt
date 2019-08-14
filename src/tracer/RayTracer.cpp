@@ -41,7 +41,9 @@ Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &nor
 
     Vector3f direct = traceRay(ray, hit, tMin, maxBounces, 1.0f, normalViz);
     Vector3f indirect = Vector3f::ZERO;
-    int numSecondaryRays = 10;
+
+    int numSecondaryRays = 20;
+    float searchRadius = 0.025f;
     for (unsigned int i = 0; i < numSecondaryRays; i++)
     {
         Vector3f dir = randomUnitVector();
@@ -49,16 +51,18 @@ Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &nor
         {
             dir = -dir;
         }
-        
+
         Hit iHit;
         Ray iRay{ray.pointAtParameter(hit.getT()), dir};
         if (scene->getGroup()->intersect(iRay, iHit, tMin))
         {
-            indirect += pMap.radianceEstimate(ray, hit, 0.1);
+            indirect += pMap.radianceEstimate(iRay, iHit, searchRadius);
         }
     }
-    
-    return direct + (indirect / numSecondaryRays);
+
+    // numSecondaryRays = max(1, numSecondaryRays);
+    // return direct + (indirect / numSecondaryRays);
+    return (indirect / numSecondaryRays);
 }
 
 Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap)

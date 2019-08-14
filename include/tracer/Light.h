@@ -21,6 +21,8 @@ public:
     virtual Vector3f getPosition() const = 0;
 
     virtual Vector3f getSourceColor() const = 0;
+    
+    virtual float getFalloff() const = 0;
 };
 
 class DirectionalLight : public Light
@@ -55,6 +57,11 @@ public:
     virtual Vector3f getSourceColor() const
     {
         return color;
+    }
+    
+    virtual float getFalloff() const
+    {
+        return 0;
     }
 
 private:
@@ -96,6 +103,11 @@ public:
     virtual Vector3f getSourceColor() const
     {
         return color;
+    }
+    
+    virtual float getFalloff() const
+    {
+        return falloff;
     }
 
 private:

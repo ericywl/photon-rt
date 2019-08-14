@@ -12,6 +12,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include/utils
     ${PROJECT_SOURCE_DIR}/lib/vecmath/include
     ${PROJECT_SOURCE_DIR}/lib/kdtree
+    ${PROJECT_SOURCE_DIR}/lib/nanoflann
 )
 
 file(GLOB_RECURSE ALL_SRCS
