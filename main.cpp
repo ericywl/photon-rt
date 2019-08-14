@@ -9,16 +9,8 @@
 
 using namespace std;
 
-void renderAA(Arguments *args)
+void renderAA(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *args)
 {
-    SceneParser *scene = new SceneParser(args->inputName);
-    RayTracer rtx = RayTracer(scene, args);
-
-    // Build photon map
-    cout << "Building photon map..." << endl;
-    PhotonMap pMap = PhotonMap(scene, 200000, 4);
-    pMap.build();
-
     // Sampling scale
     unsigned int scale = 3;
     // Gaussian blur kernel
@@ -56,17 +48,8 @@ void renderAA(Arguments *args)
     img.SaveImage(args->outputName);
 }
 
-void render(Arguments *args, bool normalsOnly = false)
+void render(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *args, bool normalsOnly = false)
 {
-    // First, parse the scene using SceneParser.
-    SceneParser *scene = new SceneParser(args->inputName);
-    RayTracer rtx = RayTracer(scene, args);
-
-    // Build photon map
-    cout << "Building photon map..." << endl;
-    PhotonMap pMap = PhotonMap(scene, 0, 4);
-    pMap.build();
-
     // Then loop over each pixel in the image, shooting a ray
     // through that pixel and finding its intersection with
     // the scene.  Write the color at the intersection to that
@@ -126,19 +109,28 @@ int main(int argc, char *argv[])
     Arguments *args = new Arguments;
     if (!parseArgs(argc, argv, args))
         return -1;
+        
+    // First, parse the scene using SceneParser.
+    SceneParser *scene = new SceneParser(args->inputName);
+    RayTracer rtx = RayTracer(scene, args);
+
+    // Build photon map
+    cout << "Building photon map..." << endl;
+    PhotonMap pMap = PhotonMap(scene, 0, 4);
+    pMap.build();
 
     if (args->antiAlias)
     {
-        renderAA(args);
+        renderAA(rtx, pMap, scene, args);
         if (args->showNormals)
         {
             args->maxBounces = 0;
-            render(args, true);
+            render(rtx, pMap, scene, args, true);
         }
     }
     else
     {
-        render(args);
+        render(rtx, pMap, scene, args);
     }
 
     return 0;
