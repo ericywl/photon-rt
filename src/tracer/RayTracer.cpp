@@ -13,14 +13,16 @@ bool checkInShadow(Group *g, Vector3f &point, Vector3f &dirToLight, float distTo
     return shadowHit.getT() != distToLight;
 }
 
-RayTracer::RayTracer(SceneParser *scene, Arguments *args)
+RayTracer::RayTracer(SceneParser *scene, Arguments *args, PhotonMap *pMap)
 {
     this->scene = scene;
-    maxBounces = args->maxBounces;
+    this->photonMap = pMap;
+    maxBounces = args->rayBounces;
     castShadows = args->shadows;
     blinn = args->useBlinn;
     gamma = args->gamma;
-    // searchRadius = args->searchRadius;
+    nearestN = args->nearestNeighbors;
+    secondaryRays = args->secondaryRays;
 }
 
 void RayTracer::setScene(SceneParser *newScene)
@@ -33,18 +35,29 @@ void RayTracer::setBounces(int newBounces)
     this->maxBounces = newBounces;
 }
 
-Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &normalViz)
+Vector3f RayTracer::computeColor(Vector2f &pixel, Vector3f &normalViz)
 {
     Hit hit;
     Ray ray = scene->getCamera()->generateRay(pixel);
     float tMin = scene->getCamera()->getTMin();
-
     Vector3f direct = traceRay(ray, hit, tMin, maxBounces, 1.0f, normalViz);
+    Vector3f indirect = 20.0f * computeIndirect(ray, hit, EPSILON);
+    Vector3f caustic = 40.0f * photonMap->knnRadianceEstimate(ray, hit, nearestN, true);
+
+    return direct + indirect + caustic;
+}
+
+Vector3f RayTracer::computeColor(Vector2f &pixel)
+{
+    Vector3f temp;
+    return computeColor(pixel, temp);
+}
+
+Vector3f RayTracer::computeIndirect(Ray &ray, Hit &hit, float tMin)
+{
     Vector3f indirect = Vector3f::ZERO;
 
-    int numSecondaryRays = 20;
-    float searchRadius = 0.025f;
-    for (unsigned int i = 0; i < numSecondaryRays; i++)
+    for (unsigned int i = 0; i < secondaryRays; i++)
     {
         Vector3f dir = randomUnitVector();
         if (Vector3f::dot(dir, hit.getNormal()) < 0.0f)
@@ -56,19 +69,11 @@ Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &nor
         Ray iRay{ray.pointAtParameter(hit.getT()), dir};
         if (scene->getGroup()->intersect(iRay, iHit, tMin))
         {
-            indirect += pMap.radianceEstimate(iRay, iHit, searchRadius);
+            indirect += photonMap->knnRadianceEstimate(iRay, iHit, nearestN, false);
         }
     }
 
-    // numSecondaryRays = max(1, numSecondaryRays);
-    // return direct + (indirect / numSecondaryRays);
-    return (indirect / numSecondaryRays);
-}
-
-Vector3f RayTracer::computeColor(Vector2f &pixel, PhotonMap &pMap)
-{
-    Vector3f temp;
-    return computeColor(pixel, pMap, temp);
+    return indirect;
 }
 
 Vector3f RayTracer::computeIllumination(Ray &ray, Hit &hit, Vector3f &point,

@@ -46,11 +46,35 @@ bool parseArgs(int argc, char *argv[], Arguments *args)
         {
             args->useBlinn = true;
         }
-        else if (!strcmp(argv[argNum], "-bounces"))
+        else if (!strcmp(argv[argNum], "-rBounces"))
         {
             argNum++;
             assert(argNum < argc);
-            args->maxBounces = atoi(argv[argNum]);
+            args->rayBounces = atoi(argv[argNum]);
+        }
+        else if (!strcmp(argv[argNum], "-pBounces"))
+        {
+            argNum++;
+            assert(argNum < argc);
+            args->photonBounces = atoi(argv[argNum]);
+        }
+        else if (!strcmp(argv[argNum], "-photons"))
+        {
+            argNum++;
+            assert(argNum < argc);
+            args->maxPhotons = atoi(argv[argNum]);
+        }
+        else if (!strcmp(argv[argNum], "-nearest"))
+        {
+            argNum++;
+            assert(argNum < argc);
+            args->nearestNeighbors = atoi(argv[argNum]);
+        }
+        else if (!strcmp(argv[argNum], "-2rays"))
+        {
+            argNum++;
+            assert(argNum < argc);
+            args->secondaryRays = atoi(argv[argNum]);
         }
         else if (!strcmp(argv[argNum], "-shadows"))
         {

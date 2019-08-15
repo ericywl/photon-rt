@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void renderAA(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *args)
+void renderAA(RayTracer &rtx, SceneParser *scene, Arguments *args)
 {
     // Sampling scale
     unsigned int scale = 3;
@@ -36,7 +36,7 @@ void renderAA(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *ar
             // Calculate screen space coordinates
             Vector2f pixel{2.0f * (float(x) + 0.5f) * wStepHigh - 1, 2.0f * (float(y) + 0.5f) * hStepHigh - 1};
             // Generate ray through pixel and compute resulting color
-            Vector3f color = rtx.computeColor(pixel, pMap);
+            Vector3f color = rtx.computeColor(pixel);
             imgHigh.SetPixel(w, h, color);
         }
     }
@@ -49,7 +49,7 @@ void renderAA(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *ar
     img.SaveImage(args->outputName);
 }
 
-void render(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *args, bool normalsOnly = false)
+void render(RayTracer &rtx, SceneParser *scene, Arguments *args, bool normalsOnly = false)
 {
     // Then loop over each pixel in the image, shooting a ray
     // through that pixel and finding its intersection with
@@ -74,7 +74,7 @@ void render(RayTracer &rtx, PhotonMap &pMap, SceneParser *scene, Arguments *args
             Vector2f pixel{2.0f * (float(w) + 0.5f) * wStep - 1, 2.0f * (float(h) + 0.5f) * hStep - 1};
             // Generate ray through pixel and compute resulting color
             Vector3f normalViz;
-            Vector3f color = rtx.computeColor(pixel, pMap, normalViz);
+            Vector3f color = rtx.computeColor(pixel, normalViz);
             img.SetPixel(w, h, color);
 
             // Set normal visualization pixel color
@@ -110,28 +110,28 @@ int main(int argc, char *argv[])
     Arguments *args = new Arguments;
     if (!parseArgs(argc, argv, args))
         return -1;
-        
+
     // First, parse the scene using SceneParser.
     SceneParser *scene = new SceneParser(args->inputName);
-    RayTracer rtx = RayTracer(scene, args);
-
     // Build photon map
     cout << "Building photon map..." << endl;
-    PhotonMap pMap = PhotonMap(scene, 200000, 8);
+    PhotonMap pMap = PhotonMap(scene, args);
     pMap.build();
+
+    RayTracer rtx = RayTracer(scene, args, &pMap);
 
     if (args->antiAlias)
     {
-        renderAA(rtx, pMap, scene, args);
+        renderAA(rtx, scene, args);
         if (args->showNormals)
         {
-            args->maxBounces = 0;
-            render(rtx, pMap, scene, args, true);
+            args->rayBounces = 0;
+            render(rtx, scene, args, true);
         }
     }
     else
     {
-        render(rtx, pMap, scene, args);
+        render(rtx, scene, args);
     }
 
     return 0;

@@ -14,15 +14,15 @@
 class RayTracer
 {
 public:
-    RayTracer(SceneParser *scene, Arguments *args);
+    RayTracer(SceneParser *scene, Arguments *args, PhotonMap *pMap);
 
     void setScene(SceneParser *newScene);
 
     void setBounces(int newBounces);
 
-    Vector3f computeColor(Vector2f &pixel, PhotonMap &pMap);
+    Vector3f computeColor(Vector2f &pixel);
 
-    Vector3f computeColor(Vector2f &pixel, PhotonMap &pMap, Vector3f &normalViz);
+    Vector3f computeColor(Vector2f &pixel, Vector3f &normalViz);
 
 private:
     Vector3f traceRay(Ray &ray, Hit &hit, float tMin,
@@ -31,6 +31,8 @@ private:
 
     Vector3f traceRay(Ray &ray, Hit &hit, float tMin,
                       unsigned int bounces, float refrIndex);
+
+    Vector3f computeIndirect(Ray &ray, Hit &hit, float tMin);
 
     Vector3f computeIllumination(Ray &ray, Hit &hit, Vector3f &point,
                                  Vector3f &normalViz);
@@ -46,7 +48,10 @@ private:
 
 protected:
     SceneParser *scene;
+    PhotonMap *photonMap;
     int maxBounces;
+    int nearestN;
+    int secondaryRays;
     float gamma;
     bool castShadows;
     bool blinn;
