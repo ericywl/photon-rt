@@ -71,6 +71,8 @@ class PhotonMap
 {
 public:
     PhotonMap(SceneParser *scene, Arguments *args);
+    
+    bool ready = false;
 
     void build();
 

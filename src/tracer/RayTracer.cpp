@@ -41,8 +41,12 @@ Vector3f RayTracer::computeColor(Vector2f &pixel, Vector3f &normalViz)
     Ray ray = scene->getCamera()->generateRay(pixel);
     float tMin = scene->getCamera()->getTMin();
     Vector3f direct = traceRay(ray, hit, tMin, maxBounces, 1.0f, normalViz);
-    Vector3f indirect = 20.0f * computeIndirect(ray, hit, EPSILON);
-    Vector3f caustic = 40.0f * photonMap->knnRadianceEstimate(ray, hit, nearestN, true);
+    Vector3f indirect, caustic;
+    if (photonMap->ready)
+    {
+        indirect = 20.0f * computeIndirect(ray, hit, EPSILON);
+        caustic = 40.0f * photonMap->knnRadianceEstimate(ray, hit, nearestN, true);
+    }
 
     return direct + indirect + caustic;
 }

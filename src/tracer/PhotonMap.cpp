@@ -92,6 +92,7 @@ void PhotonMap::build()
     // this->balance();
     gMapIndex->buildIndex();
     cMapIndex->buildIndex();
+    ready = true;
 }
 
 void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,

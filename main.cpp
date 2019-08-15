@@ -116,7 +116,8 @@ int main(int argc, char *argv[])
     // Build photon map
     cout << "Building photon map..." << endl;
     PhotonMap pMap = PhotonMap(scene, args);
-    pMap.build();
+    if (args->maxPhotons > 0)
+        pMap.build();
 
     RayTracer rtx = RayTracer(scene, args, &pMap);
 
