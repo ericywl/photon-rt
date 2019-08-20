@@ -18,13 +18,3 @@
   | -blinn                 | A toggle to use Blinn-Phong specular shading instead (optional)                      |
 
 TODO: Add more arguments for ray tracer
-
-### What components of extra project that's been done?
-
-TODO: 
-- Photon mapping with kd-tree acceleration to render caustics
-- Irridance caching
-
-### Are there any known bugs for your code?
-
-Not that I know of.
