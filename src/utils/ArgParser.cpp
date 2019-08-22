@@ -46,6 +46,12 @@ bool parseArgs(int argc, char *argv[], Arguments *args)
         {
             args->useBlinn = true;
         }
+        else if (!strcmp(argv[argNum], "-secRays"))
+        {
+            argNum++;
+            assert(argNum < argc);
+            args->secondaryRays = atoi(argv[argNum]);
+        }
         else if (!strcmp(argv[argNum], "-rBounces"))
         {
             argNum++;

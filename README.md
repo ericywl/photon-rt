@@ -1,11 +1,17 @@
-# Ray Tracer
+# Indirect illumination using Custom Photon Mapping
+
+### Build from source and run the program
+* `cmake . && make`. This should produce an executable `ray-tracer`.
+
+### Example arguments
+* `./ray-tracer -input data/scene/cornell.txt -output render.bmp -size 800 600 -shadows -rBounces 10 -pBounces 10 -photons 50000 -nearest 10`
 
 ### What kind of arguments (if any) that you program needs?
 
 - The program takes in some necessary arguments and some optional.
 
   ```
-  Usage: build/asg5 -input <INPUT_SCENE> -output <OUTPUT_IMG> -size <WIDTH> <HEIGHT> ...
+  Usage: ./ray-tracer -input <INPUT_SCENE> -output <OUTPUT_IMG> -size <WIDTH> <HEIGHT> ...
   ```
 
   | Argument               | Description                                                                          |
@@ -16,5 +22,10 @@
   | -normals <NORMAL_IMG>  | Takes in filename to save normals for visualization, mainly for debugging (optional) |
   | -gamma <GAMMA>         | Takes in a float that is used for gamma correction (optional)                        |
   | -blinn                 | A toggle to use Blinn-Phong specular shading instead (optional)                      |
-
-TODO: Add more arguments for ray tracer
+  | -shadows               | A toggle to render with shadows (optional)                                           |
+  | -aa                    | A toggle to render with anti-aliasing (optional)                                     |
+  | -secRays               | (int) The number of secondary rays in the Monte Carlo tracer   (default: 5)          |
+  | -rBounces              | (int) The maximum number of bounces for the Monte Carlo tracer (default: 3)          |
+  | -pBounces              | (int) The maximum number of bounces for the photon tracer      (default: 3)          |
+  | -photons               | (int) A toggle to use Blinn-Phong specular shading instead     (default: 10000)      |  
+  | -nearest               | (int) Nearest neighbors for the kd-tree search                 (default: 5)          |

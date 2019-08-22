@@ -5,7 +5,7 @@ out/
 *.bmp
 
 # project specific
-asg5
+ray-tracer
 
 # build
 Makefile

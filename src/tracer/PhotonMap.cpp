@@ -189,7 +189,7 @@ void PhotonMap::tracePhoton(Ray &photonRay, Vector3f color,
         float Pd = d.sum() / refCol.sum() * Pr;
         float Ps = Pr - Pd;
 
-        // Russian Roulette
+        //  Roulette
         float roulette = randomFloat(0, 1);
         if (roulette < Pd)
         {

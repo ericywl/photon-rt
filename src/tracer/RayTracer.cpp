@@ -61,6 +61,8 @@ Vector3f RayTracer::computeIndirect(Ray &ray, Hit &hit, float tMin)
 {
     Vector3f indirect = Vector3f::ZERO;
 
+    if (secondaryRays == 0) return indirect;
+
     for (unsigned int i = 0; i < secondaryRays; i++)
     {
         Vector3f dir = randomUnitVector();
@@ -77,7 +79,7 @@ Vector3f RayTracer::computeIndirect(Ray &ray, Hit &hit, float tMin)
         }
     }
 
-    return indirect;
+    return indirect / secondaryRays;
 }
 
 Vector3f RayTracer::computeIllumination(Ray &ray, Hit &hit, Vector3f &point,

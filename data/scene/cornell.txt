@@ -2,7 +2,7 @@ PerspectiveCamera {
     center 0 0.5 0
     direction 0 -0.25 -1
     up 0 1 0
-    angle 77
+    angle 90
 }
 
 Lights {

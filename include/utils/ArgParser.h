@@ -19,11 +19,11 @@ struct Arguments
     bool shadows = false;
     bool antiAlias = false;
     float gamma = 1.0f;
-    unsigned int rayBounces = 0;
-    unsigned int photonBounces = 0;
-    unsigned int maxPhotons = 0;
-    unsigned int nearestNeighbors = 0;
-    unsigned int secondaryRays = 0;
+    unsigned int rayBounces = 3;
+    unsigned int photonBounces = 3;
+    unsigned int maxPhotons = 10000;
+    unsigned int nearestNeighbors = 5;
+    unsigned int secondaryRays = 5;
 };
 
 bool parseArgs(int argc, char *argv[], Arguments *args);
