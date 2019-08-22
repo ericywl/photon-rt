@@ -27,5 +27,5 @@
   | -secRays               | (int) The number of secondary rays in the Monte Carlo tracer   (default: 5)          |
   | -rBounces              | (int) The maximum number of bounces for the Monte Carlo tracer (default: 3)          |
   | -pBounces              | (int) The maximum number of bounces for the photon tracer      (default: 3)          |
-  | -photons               | (int) A toggle to use Blinn-Phong specular shading instead     (default: 10000)      |  
-  | -nearest               | (int) Nearest neighbors for the kd-tree search                 (default: 5)          |
+  | -photons               | (int) The number of photons to fire                            (default: 10000)      |  
+  | -nearest               | (int) The number of nearest neighbors for the kd-tree search   (default: 5)          |
